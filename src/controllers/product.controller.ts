@@ -76,6 +76,22 @@ export class ProductController {
     return this.productRepository.find(filter);
   }
 
+  @get('/visible-products')
+  @response(200, {
+    description: 'Array of visible Product model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Product, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async findAvailableProducts(): Promise<Product[]> {
+    return this.productRepository.find({where: {isHidden: false}});
+  }
+
   @patch('/products')
   @response(200, {
     description: 'Product PATCH success count',
