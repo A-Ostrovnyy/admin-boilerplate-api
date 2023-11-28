@@ -32,6 +32,13 @@ export class Product extends Entity {
   })
   isHidden: boolean;
 
+  @property.array(String, {
+    itemType: 'string',
+    required: false,
+    mongodb: {dataType: 'ObjectID'},
+  })
+  tagIds?: string[];
+
   // Define well-known properties here
 
   // Indexer property to allow additional data
