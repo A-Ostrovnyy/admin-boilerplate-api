@@ -131,7 +131,26 @@ export class ProductCategoryController {
     @param.filter(ProductCategory, {exclude: 'where'})
     filter?: FilterExcludingWhere<ProductCategory>,
   ): Promise<ProductCategory> {
-    return this.productCategoryRepository.findById(id, filter);
+    const productCategory = await this.productCategoryRepository.findById(
+      id,
+      filter,
+    );
+
+    try {
+      productCategory.tags = await this.tagRepository.find({
+        where: {
+          _id: {
+            in: productCategory.tagIds,
+          },
+        },
+      });
+    } catch (err) {
+      console.log(
+        `Error during aggregating tags for product ${productCategory.id}`,
+      );
+    }
+
+    return productCategory;
   }
 
   @patch('/product-categories/{id}')
