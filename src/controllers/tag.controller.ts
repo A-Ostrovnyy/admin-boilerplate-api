@@ -47,14 +47,14 @@ export class TagController {
     return this.tagRepository.create(tag);
   }
 
-  // @get('/tags/count')
-  // @response(200, {
-  //   description: 'Tag model count',
-  //   content: {'application/json': {schema: CountSchema}},
-  // })
-  // async count(@param.where(Tag) where?: Where<Tag>): Promise<Count> {
-  //   return this.tagRepository.count(where);
-  // }
+  @get('/tags/count')
+  @response(200, {
+    description: 'Tag model count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async count(@param.where(Tag) where?: Where<Tag>): Promise<Count> {
+    return this.tagRepository.count(where);
+  }
 
   @get('/tags')
   @response(200, {
@@ -72,24 +72,24 @@ export class TagController {
     return this.tagRepository.find(filter);
   }
 
-  // @patch('/tags')
-  // @response(200, {
-  //   description: 'Tag PATCH success count',
-  //   content: {'application/json': {schema: CountSchema}},
-  // })
-  // async updateAll(
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Tag, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   tag: Tag,
-  //   @param.where(Product) where?: Where<Tag>,
-  // ): Promise<Count> {
-  //   return this.tagRepository.updateAll(tag, where);
-  // }
+  @patch('/tags')
+  @response(200, {
+    description: 'Tag PATCH success count',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Tag, {partial: true}),
+        },
+      },
+    })
+    tag: Tag,
+    @param.where(Tag) where?: Where<Tag>,
+  ): Promise<Count> {
+    return this.tagRepository.updateAll(tag, where);
+  }
 
   @get('/tags/{id}')
   @response(200, {

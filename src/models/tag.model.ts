@@ -14,7 +14,7 @@ export class Tag extends Entity {
     type: 'string',
     required: true,
   })
-  title: string;
+  name: string;
 
   // Define well-known properties here
 
