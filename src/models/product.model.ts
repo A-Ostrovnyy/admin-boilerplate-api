@@ -1,5 +1,6 @@
 import {Entity, belongsTo, model, property} from '@loopback/repository';
 import {ProductCategory} from './product-category.model';
+import {Tag} from './tag.model';
 
 @model({settings: {strict: false}})
 export class Product extends Entity {
@@ -38,6 +39,11 @@ export class Product extends Entity {
     mongodb: {dataType: 'ObjectID'},
   })
   tagIds?: string[];
+
+  @property.array(Tag, {
+    itemType: Tag,
+  })
+  tags?: Tag[];
 
   // Define well-known properties here
 

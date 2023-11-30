@@ -1,4 +1,5 @@
 import {Entity, belongsTo, model, property} from '@loopback/repository';
+import {Tag} from './tag.model';
 
 @model({settings: {strict: false}})
 export class ProductCategory extends Entity {
@@ -26,6 +27,11 @@ export class ProductCategory extends Entity {
   })
   tagIds?: string[];
 
+  @property.array(Tag, {
+    itemType: Tag,
+  })
+  tags?: Tag[];
+
   // Define well-known properties here
 
   // Indexer property to allow additional data
@@ -41,4 +47,5 @@ export interface ProductCategoryRelations {
   // describe navigational properties here
 }
 
-export type ProductCategoryWithRelations = ProductCategory & ProductCategoryRelations;
+export type ProductCategoryWithRelations = ProductCategory &
+  ProductCategoryRelations;

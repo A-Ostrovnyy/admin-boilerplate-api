@@ -166,7 +166,21 @@ export class ProductController {
     @param.filter(Product, {exclude: 'where'})
     filter?: FilterExcludingWhere<Product>,
   ): Promise<Product> {
-    return this.productRepository.findById(id, filter);
+    const product = await this.productRepository.findById(id, filter);
+
+    try {
+      product.tags = await this.tagRepository.find({
+        where: {
+          _id: {
+            in: product.tagIds,
+          },
+        },
+      });
+    } catch (err) {
+      console.log(`Error during aggregating tags for product ${product.id}`);
+    }
+
+    return product;
   }
 
   @patch('/products/{id}')
