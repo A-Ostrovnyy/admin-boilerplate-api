@@ -18,12 +18,14 @@ import {
   response,
 } from '@loopback/rest';
 import {ProductCategory} from '../models';
-import {ProductCategoryRepository} from '../repositories';
+import {ProductCategoryRepository, TagRepository} from '../repositories';
 
 export class ProductCategoryController {
   constructor(
     @repository(ProductCategoryRepository)
-    public productCategoryRepository : ProductCategoryRepository,
+    public productCategoryRepository: ProductCategoryRepository,
+    @repository(TagRepository)
+    public tagRepository: TagRepository,
   ) {}
 
   @post('/product-categories')
@@ -73,7 +75,27 @@ export class ProductCategoryController {
   async find(
     @param.filter(ProductCategory) filter?: Filter<ProductCategory>,
   ): Promise<ProductCategory[]> {
-    return this.productCategoryRepository.find(filter);
+    // TODO: research how to use aggregate method
+    const productCategories = await this.productCategoryRepository.find(filter);
+    // TODO: consider to create util function
+    await Promise.all(
+      productCategories.map(async productCategory => {
+        try {
+          productCategory.tags = await this.tagRepository.find({
+            where: {
+              _id: {
+                in: productCategory.tagIds,
+              },
+            },
+          });
+        } catch (err) {
+          console.log(
+            `Error during aggregating tags for product ${productCategory.id}`,
+          );
+        }
+      }),
+    );
+    return productCategories;
   }
 
   @patch('/product-categories')
@@ -106,7 +128,8 @@ export class ProductCategoryController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(ProductCategory, {exclude: 'where'}) filter?: FilterExcludingWhere<ProductCategory>
+    @param.filter(ProductCategory, {exclude: 'where'})
+    filter?: FilterExcludingWhere<ProductCategory>,
   ): Promise<ProductCategory> {
     return this.productCategoryRepository.findById(id, filter);
   }
