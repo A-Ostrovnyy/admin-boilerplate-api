@@ -18,12 +18,14 @@ import {
   response,
 } from '@loopback/rest';
 import {Product} from '../models';
-import {ProductRepository} from '../repositories';
+import {ProductRepository, TagRepository} from '../repositories';
 
 export class ProductController {
   constructor(
     @repository(ProductRepository)
-    public productRepository : ProductRepository,
+    public productRepository: ProductRepository,
+    @repository(TagRepository)
+    public tagRepository: TagRepository,
   ) {}
 
   @post('/products')
@@ -52,9 +54,7 @@ export class ProductController {
     description: 'Product model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Product) where?: Where<Product>,
-  ): Promise<Count> {
+  async count(@param.where(Product) where?: Where<Product>): Promise<Count> {
     return this.productRepository.count(where);
   }
 
@@ -73,7 +73,27 @@ export class ProductController {
   async find(
     @param.filter(Product) filter?: Filter<Product>,
   ): Promise<Product[]> {
-    return this.productRepository.find(filter);
+    // TODO: research how to use aggregate method
+    const products = await this.productRepository.find(filter);
+    // TODO: consider to create util function
+    await Promise.all(
+      products.map(async product => {
+        try {
+          product.tags = await this.tagRepository.find({
+            where: {
+              _id: {
+                in: product.tagIds,
+              },
+            },
+          });
+        } catch (err) {
+          console.log(
+            `Error during aggregating tags for product ${product.id}`,
+          );
+        }
+      }),
+    );
+    return products;
   }
 
   @get('/visible-products')
@@ -89,7 +109,28 @@ export class ProductController {
     },
   })
   async findAvailableProducts(): Promise<Product[]> {
-    return this.productRepository.find({where: {isHidden: false}});
+    const products = await this.productRepository.find({
+      where: {isHidden: false},
+    });
+    // TODO: consider to create util function
+    await Promise.all(
+      products.map(async product => {
+        try {
+          product.tags = await this.tagRepository.find({
+            where: {
+              _id: {
+                in: product.tagIds,
+              },
+            },
+          });
+        } catch (err) {
+          console.log(
+            `Error during aggregating tags for product ${product.id}`,
+          );
+        }
+      }),
+    );
+    return products;
   }
 
   @patch('/products')
@@ -122,7 +163,8 @@ export class ProductController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Product, {exclude: 'where'}) filter?: FilterExcludingWhere<Product>
+    @param.filter(Product, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Product>,
   ): Promise<Product> {
     return this.productRepository.findById(id, filter);
   }
